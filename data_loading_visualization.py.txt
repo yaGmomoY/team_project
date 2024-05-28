@@ -1,0 +1,48 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+
+st.sidebar.title("Εφαρμογή Εξόρυξης και Ανάλυσης Δεδομένων")
+
+uploaded_file = st.sidebar.file_uploader("Ανεβάστε το αρχείο δεδομένων σας (CSV ή Excel)", type=["csv", "xlsx"])
+
+if uploaded_file:
+    if uploaded_file.name.endswith('.csv'):
+        data = pd.read_csv(uploaded_file)
+    else:
+        data = pd.read_excel(uploaded_file)
+
+    st.title("Επισκόπηση Δεδομένων")
+    st.write("Προεπισκόπηση Δεδομένων:")
+    st.write(data.head())
+
+    st.subheader("Προδιαγραφές Πίνακα")
+    st.write("Ο πίνακας δεδομένων (SxF) πρέπει να διαρθρωθεί ως εξής:")
+    st.write("Γραμμές: S δείγματα.")
+    st.write("Στήλες: F χαρακτηριστικά.")
+    st.write("Στήλη F+1: ετικέτα για κάθε δείγμα.")
+
+    # PCA Οπτικοποίηση
+    st.subheader("2D Οπτικοποίηση")
+    pca = PCA(n_components=2)
+    pca_result = pca.fit_transform(data.iloc[:, :-1])
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x=pca_result[:, 0], y=pca_result[:, 1], hue=data.iloc[:, -1], palette="viridis")
+    plt.xlabel('PCA 1')
+    plt.ylabel('PCA 2')
+    plt.title('PCA Οπτικοποίηση')
+    st.pyplot(plt)
+
+    # t-SNE Οπτικοποίηση
+    perplexity_value = min(30, len(data) - 1)
+    tsne = TSNE(n_components=2, perplexity=perplexity_value)
+    tsne_result = tsne.fit_transform(data.iloc[:, :-1])
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x=tsne_result[:, 0], y=tsne_result[:, 1], hue=data.iloc[:, -1], palette="coolwarm")
+    plt.xlabel('t-SNE 1')
+    plt.ylabel('t-SNE 2')
+    plt.title('t-SNE Οπτικοποίηση')
+    st.pyplot(plt)
